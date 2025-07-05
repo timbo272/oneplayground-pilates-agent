@@ -1,0 +1,25 @@
+name: Watch timetable
+
+on:
+  schedule:
+    - cron:  '0 * * * *'     # hourly
+  workflow_dispatch:
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm install puppeteer@22 node-fetch@3 @octokit/core
+
+      - run: node .github/scripts/scrape.js
+        env:
+          GH_TOKEN:           ${{ secrets.GH_TOKEN }}
+          SLACK_WEBHOOK_URL:  ${{ secrets.SLACK_WEBHOOK_URL }}

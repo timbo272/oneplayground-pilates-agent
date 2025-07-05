@@ -1,0 +1,36 @@
+name: Book on /book comment
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  book:
+    if: contains(github.event.comment.body, '/book') && contains(github.event.issue.labels.*.name, 'pilates')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm install puppeteer@22 @actions/core
+
+      - name: Extract class ID
+        id: vars
+        run: echo "CLASS_ID=$(echo '${{ github.event.issue.title }}' | grep -oE 'Class ([0-9]+)' | cut -d' ' -f2)" >> $GITHUB_OUTPUT
+
+      - name: Book class
+        run: node .github/scripts/book.js
+        env:
+          OP_EMAIL:    ${{ secrets.OP_EMAIL }}
+          OP_PASSWORD: ${{ secrets.OP_PASSWORD }}
+        with:
+          inputs: |
+            class_id: ${{ steps.vars.outputs.CLASS_ID }}
+
+      - name: Comment success
+        run: gh issue comment ${{ github.event.issue.number }} --body "🎉 Booked!"
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
