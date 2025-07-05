@@ -1,0 +1,9 @@
+name: hello
+
+on: workflow_dispatch
+
+jobs:
+  hi:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "👋 Actions are alive"
